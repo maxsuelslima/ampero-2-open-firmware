@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manual_index>
+  <manual name="SHARC+ Programming Reference" filename="SHARC_Programming_Reference.pdf" description="ADSP-21573 SHARC+ Processor Programming Reference"/>
+  <manual name="SHARC+ Instruction Set Reference" filename="SHARC_Instruction_Set_Reference.pdf" description="SHARC+ Instruction Set Reference"/>
+  <manual name="SHARC+ Core Architecture" filename="SHARC_Core_Architecture.pdf" description="SHARC+ Core Architecture Overview"/>
+  <manual name="VisualDSP++ Compiler Manual" filename="VisualDSP_Compiler.pdf" description="VisualDSP++ C/C++ Compiler and Library Manual for SHARC"/>
+</manual_index>

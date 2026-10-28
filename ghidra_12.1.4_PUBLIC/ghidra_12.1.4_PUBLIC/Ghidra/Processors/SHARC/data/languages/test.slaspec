@@ -1,0 +1,36 @@
+# Minimal SHARC test
+define endian=big;
+define alignment=6;
+
+define space PM type=ram_space size=4 wordsize=6 default;
+define space DM type=ram_space size=4 wordsize=4;
+define space register type=register_space size=4 wordsize=4;
+
+define register offset=0x00 size=4 [ R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 ];
+
+define register offset=0x100 size=4 contextreg;
+define context contextreg
+  PEYEN = (0,0)
+;
+
+define token sharc_instr (48)
+  Rx=(16,19)
+  Ry=(12,15)
+  Rz=(8,11)
+  opcode=(42,47)
+  subop=(36,41)
+;
+
+# Sub-constructor test
+rx: Rx is Rx { export Rx; }
+ry: Ry is Ry { export Ry; }
+rz_src: Rz is Rz { export Rz; }
+rz_dest: Rz is Rz { export Rz; }
+
+# Instruction test
+:test rx, ry, rz_dest is rx & ry & rz_dest & opcode=0 & subop=0
+{
+  build rx;
+  build ry;
+  rz_dest = rx + ry;
+}

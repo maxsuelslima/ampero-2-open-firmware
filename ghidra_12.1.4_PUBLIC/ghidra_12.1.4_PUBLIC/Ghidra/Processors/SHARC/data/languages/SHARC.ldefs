@@ -1,0 +1,48 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<language_definitions>
+
+  <!-- SHARC ADSP-21573 Little Endian (Data) / Big Endian (Instructions) -->
+  <language processor="SHARC"
+            endian="big"
+            instructionEndian="big"
+            size="32"
+            variant="SHARC+"
+            version="1.0"
+            slafile="SHARC.sla"
+            processorspec="SHARC.pspec"
+            manualindexfile="../manuals/SHARC.idx"
+            id="SHARC:BE:32:SHARC+">
+    <description>Analog Devices SHARC+ (ADSP-21573) big endian</description>
+    <compiler name="default" spec="SHARC.cspec" id="default"/>
+    <compiler name="DSP" spec="SHARC.cspec" id="dsp"/>
+    <external_name tool="gnu" name="sharc"/>
+    <external_name tool="gnu" name="adsp21573"/>
+    <external_name tool="gdis.disassembler.options.file" name="SHARC.gdis"/>
+    <external_name tool="IDA-PRO" name="sharc"/>
+    <external_name tool="DWARF.register.mapping.file" name="SHARC.dwarf"/>
+    <external_name tool="qemu" name="qemu-sharc"/>
+    <external_name tool="qemu_system" name="qemu-system-sharc"/>
+  </language>
+
+  <!-- SHARC with little-endian data (for some toolchains) -->
+  <language processor="SHARC"
+            endian="little"
+            instructionEndian="big"
+            size="32"
+            variant="SHARC+"
+            version="1.0"
+            slafile="SHARC.sla"
+            processorspec="SHARC.pspec"
+            manualindexfile="../manuals/SHARC.idx"
+            id="SHARC:LEBE:32:SHARC+">
+    <description>Analog Devices SHARC+ big endian instructions, little endian data</description>
+    <compiler name="default" spec="SHARC.cspec" id="default"/>
+    <compiler name="DSP" spec="SHARC.cspec" id="dsp"/>
+    <external_name tool="gnu" name="sharc"/>
+    <external_name tool="gnu" name="adsp21573"/>
+    <external_name tool="gdis.disassembler.options.file" name="SHARC.gdis"/>
+    <external_name tool="IDA-PRO" name="sharc"/>
+    <external_name tool="DWARF.register.mapping.file" name="SHARC.dwarf"/>
+  </language>
+
+</language_definitions>

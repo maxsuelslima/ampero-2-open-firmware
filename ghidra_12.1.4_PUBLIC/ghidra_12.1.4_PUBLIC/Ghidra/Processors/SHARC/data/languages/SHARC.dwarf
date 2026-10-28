@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dwarf_register_mapping>
+  <!-- DWARF Register Mapping for SHARC (ADSP-21573) -->
+  <!-- Maps DWARF register numbers to SHARC registers -->
+
+  <!-- General Purpose Registers R0-R15 -->
+  <mapping dwarf="0"  name="R0"   size="4" />
+  <mapping dwarf="1"  name="R1"   size="4" />
+  <mapping dwarf="2"  name="R2"   size="4" />
+  <mapping dwarf="3"  name="R3"   size="4" />
+  <mapping dwarf="4"  name="R4"   size="4" />
+  <mapping dwarf="5"  name="R5"   size="4" />
+  <mapping dwarf="6"  name="R6"   size="4" />
+  <mapping dwarf="7"  name="R7"   size="4" />
+  <mapping dwarf="8"  name="R8"   size="4" />
+  <mapping dwarf="9"  name="R9"   size="4" />
+  <mapping dwarf="10" name="R10"  size="4" />
+  <mapping dwarf="11" name="R11"  size="4" />
+  <mapping dwarf="12" name="R12"  size="4" />
+  <mapping dwarf="13" name="R13"  size="4" />
+  <mapping dwarf="14" name="R14"  size="4" />
+  <mapping dwarf="15" name="R15"  size="4" />
+
+  <!-- SIMD Registers S0-S15 -->
+  <mapping dwarf="16" name="S0"   size="4" />
+  <mapping dwarf="17" name="S1"   size="4" />
+  <mapping dwarf="18" name="S2"   size="4" />
+  <mapping dwarf="19" name="S3"   size="4" />
+  <mapping dwarf="20" name="S4"   size="4" />
+  <mapping dwarf="21" name="S5"   size="4" />
+  <mapping dwarf="22" name="S6"   size="4" />
+  <mapping dwarf="23" name="S7"   size="4" />
+  <mapping dwarf="24" name="S8"   size="4" />
+  <mapping dwarf="25" name="S9"   size="4" />
+  <mapping dwarf="26" name="S10"  size="4" />
+  <mapping dwarf="27" name="S11"  size="4" />
+  <mapping dwarf="28" name="S12"  size="4" />
+  <mapping dwarf="29" name="S13"  size="4" />
+  <mapping dwarf="30" name="S14"  size="4" />
+  <mapping dwarf="31" name="S15"  size="4" />
+
+  <!-- Extended Precision Float Registers F0-F7 (40-bit) -->
+  <mapping dwarf="32" name="F0"   size="5" />
+  <mapping dwarf="33" name="F1"   size="5" />
+  <mapping dwarf="34" name="F2"   size="5" />
+  <mapping dwarf="35" name="F3"   size="5" />
+  <mapping dwarf="36" name="F4"   size="5" />
+  <mapping dwarf="37" name="F5"   size="5" />
+  <mapping dwarf="38" name="F6"   size="5" />
+  <mapping dwarf="39" name="F7"   size="5" />
+
+  <!-- Status and Control Registers -->
+  <mapping dwarf="40" name="ASTAT"    size="4" />
+  <mapping dwarf="41" name="MODE1"   size="4" />
+  <mapping dwarf="42" name="MODE2"   size="4" />
+  <mapping dwarf="43" name="IRPTL"   size="4" />
+  <mapping dwarf="44" name="IMASK"   size="4" />
+  <mapping dwarf="45" name="USTAT1"  size="4" />
+  <mapping dwarf="46" name="USTAT2"  size="4" />
+  <mapping dwarf="47" name="LCNTR"   size="4" />
+  <mapping dwarf="48" name="SYSCTL"  size="4" />
+
+  <!-- Stack Pointers -->
+  <mapping dwarf="49" name="SP"      size="4" />
+  <mapping dwarf="50" name="SSP"     size="4" />
+  <mapping dwarf="51" name="LPSTACK" size="4" />
+
+  <!-- Frame Pointers -->
+  <mapping dwarf="52" name="FP"   size="4" />
+  <mapping dwarf="53" name="FPP"  size="4" />
+
+  <!-- Program Counter and Sequencing -->
+  <mapping dwarf="54" name="PC"     size="4" />
+  <mapping dwarf="55" name="PCSTK"  size="4" />
+  <mapping dwarf="56" name="PCSTKP" size="4" />
+
+  <!-- Loop Registers -->
+  <mapping dwarf="57" name="LADDR"    size="4" />
+  <mapping dwarf="58" name="CURLCNTR" size="4" />
+
+  <!-- System Registers -->
+  <mapping dwarf="59" name="SYSCTL2" size="4" />
+  <mapping dwarf="60" name="PMM"     size="4" />
+  <mapping dwarf="61" name="DMPM1"   size="4" />
+  <mapping dwarf="62" name="DMPM2"   size="4" />
+
+  <!-- ID Registers -->
+  <mapping dwarf="63" name="COREID" size="4" />
+  <mapping dwarf="64" name="CHIPID" size="4" />
+
+  <!-- PC is the program counter -->
+  <program_counter dwarf="54" />
+
+  <!-- Stack pointer -->
+  <stack_pointer dwarf="49" />
+
+  <!-- Frame pointer -->
+  <frame_pointer dwarf="52" />
+
+</dwarf_register_mapping>

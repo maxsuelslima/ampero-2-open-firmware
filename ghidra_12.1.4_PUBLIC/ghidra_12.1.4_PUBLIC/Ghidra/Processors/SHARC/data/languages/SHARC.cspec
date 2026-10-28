@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<compiler_spec>
+  <!--
+    SHARC Compiler Specification
+    For Analog Devices SHARC (ADSP-21573) DSP processors
+    Based on VisualDSP++ and GCC toolchain conventions
+  -->
+  <data_organization>
+     <absolute_max_alignment value="0" />
+     <machine_alignment value="2" />
+     <default_alignment value="1" />
+     <default_pointer_alignment value="4" />
+     <pointer_size value="4" />
+     <wchar_size value="4" />
+     <short_size value="2" />
+     <integer_size value="4" />
+     <long_size value="4" />
+     <long_long_size value="8" />
+     <float_size value="4" />
+     <double_size value="8" />
+     <long_double_size value="8" />
+     <size_alignment_map>
+          <entry size="1" alignment="1" />
+          <entry size="2" alignment="2" />
+          <entry size="4" alignment="4" />
+          <entry size="8" alignment="8" />
+     </size_alignment_map>
+  </data_organization>
+  <global>
+    <range space="DM"/>
+  </global>
+  <stackpointer register="SP" space="DM"/>
+
+  <funcptr align="2"/>     <!-- Function pointers are word aligned -->
+
+  <default_proto>
+    <prototype name="cdecl" extrapop="0" stackshift="0">
+      <input>
+        <!-- First 6 integer args in R0-R5 -->
+        <pentry minsize="1" maxsize="4" extension="inttype">
+          <register name="R0"/>
+        </pentry>
+        <pentry minsize="1" maxsize="4" extension="inttype">
+          <register name="R1"/>
+        </pentry>
+        <pentry minsize="1" maxsize="4" extension="inttype">
+          <register name="R2"/>
+        </pentry>
+        <pentry minsize="1" maxsize="4" extension="inttype">
+          <register name="R3"/>
+        </pentry>
+        <pentry minsize="1" maxsize="4" extension="inttype">
+          <register name="R4"/>
+        </pentry>
+        <pentry minsize="1" maxsize="4" extension="inttype">
+          <register name="R5"/>
+        </pentry>
+        <!-- Remaining args on stack -->
+        <pentry minsize="1" maxsize="500" align="4">
+          <addr offset="0" space="stack"/>
+        </pentry>
+        <rule>
+          <datatype name="float"/>
+          <varargs/>
+          <join align="true"/>
+        </rule>
+        <rule>
+          <datatype name="any"/>
+          <join align="true"/>
+        </rule>
+      </input>
+      <output>
+        <pentry minsize="1" maxsize="4" extension="inttype">
+          <register name="R0"/>
+        </pentry>
+        <pentry minsize="1" maxsize="4" extension="inttype">
+          <register name="R1"/>
+        </pentry>
+        <rule>
+          <datatype name="struct" minsize="5"/>
+          <hidden_return/>
+        </rule>
+        <rule>
+          <datatype name="union" minsize="5"/>
+          <hidden_return/>
+        </rule>
+        <rule>
+          <datatype name="any"/>
+          <join/>
+        </rule>
+      </output>
+      <unaffected>
+        <register name="R6"/>
+        <register name="R7"/>
+        <register name="R8"/>
+        <register name="R9"/>
+        <register name="R10"/>
+        <register name="R11"/>
+        <register name="R12"/>
+        <register name="R13"/>
+        <register name="FP"/>
+        <register name="SP"/>
+        <register name="PC"/>
+        <register name="S0"/>
+        <register name="S1"/>
+        <register name="S2"/>
+        <register name="S3"/>
+        <register name="S4"/>
+        <register name="S5"/>
+        <register name="S6"/>
+        <register name="S7"/>
+        <register name="S8"/>
+        <register name="S9"/>
+        <register name="S10"/>
+        <register name="S11"/>
+        <register name="S12"/>
+        <register name="S13"/>
+        <register name="S14"/>
+        <register name="S15"/>
+      </unaffected>
+      <killedbycall>
+          <register name="R0"/>
+          <register name="R1"/>
+          <register name="R2"/>
+          <register name="R3"/>
+          <register name="R4"/>
+          <register name="R5"/>
+          <register name="ASTAT"/>
+          <register name="MODE1"/>
+          <register name="MODE2"/>
+      </killedbycall>
+    </prototype>
+  </default_proto>
+
+  <!-- DSP-optimized calling convention -->
+  <prototype name="dsp_cdecl" extrapop="0" stackshift="0">
+    <input>
+      <!-- DSP calling convention: more args in registers -->
+      <pentry minsize="1" maxsize="4" extension="inttype">
+        <register name="R0"/>
+      </pentry>
+      <pentry minsize="1" maxsize="4" extension="inttype">
+        <register name="R1"/>
+      </pentry>
+      <pentry minsize="1" maxsize="4" extension="inttype">
+        <register name="R2"/>
+      </pentry>
+      <pentry minsize="1" maxsize="4" extension="inttype">
+        <register name="R3"/>
+      </pentry>
+      <pentry minsize="1" maxsize="4" extension="inttype">
+        <register name="R4"/>
+      </pentry>
+      <pentry minsize="1" maxsize="4" extension="inttype">
+        <register name="R5"/>
+      </pentry>
+      <pentry minsize="1" maxsize="4" extension="inttype">
+        <register name="R6"/>
+      </pentry>
+      <pentry minsize="1" maxsize="4" extension="inttype">
+        <register name="R7"/>
+      </pentry>
+      <pentry minsize="1" maxsize="4" extension="inttype">
+        <register name="R8"/>
+      </pentry>
+      <pentry minsize="1" maxsize="4" extension="inttype">
+        <register name="R9"/>
+      </pentry>
+      <pentry minsize="1" maxsize="4" extension="inttype">
+        <register name="R10"/>
+      </pentry>
+      <pentry minsize="1" maxsize="4" extension="inttype">
+        <register name="R11"/>
+      </pentry>
+      <pentry minsize="1" maxsize="4" extension="inttype">
+        <register name="R12"/>
+      </pentry>
+      <pentry minsize="1" maxsize="500" align="4">
+        <addr offset="0" space="stack"/>
+      </pentry>
+      <rule>
+        <datatype name="float"/>
+        <varargs/>
+        <join align="true"/>
+      </rule>
+      <rule>
+        <datatype name="any"/>
+        <join align="true"/>
+      </rule>
+    </input>
+    <output>
+      <pentry minsize="1" maxsize="4" extension="inttype">
+        <register name="R0"/>
+      </pentry>
+      <pentry minsize="1" maxsize="4" extension="inttype">
+        <register name="R1"/>
+      </pentry>
+      <rule>
+        <datatype name="struct" minsize="5"/>
+        <hidden_return/>
+      </rule>
+      <rule>
+        <datatype name="union" minsize="5"/>
+        <hidden_return/>
+      </rule>
+      <rule>
+        <datatype name="any"/>
+        <join/>
+      </rule>
+    </output>
+    <unaffected>
+      <register name="R13"/>
+      <register name="R14"/>
+      <register name="FP"/>
+      <register name="SP"/>
+      <register name="PC"/>
+    </unaffected>
+    <killedbycall>
+        <register name="R0"/>
+        <register name="R1"/>
+        <register name="R2"/>
+        <register name="R2"/>
+        <register name="R3"/>
+        <register name="R4"/>
+        <register name="R5"/>
+        <register name="R6"/>
+        <register name="R7"/>
+        <register name="R8"/>
+        <register name="R9"/>
+        <register name="R10"/>
+        <register name="R11"/>
+        <register name="R12"/>
+        <register name="ASTAT"/>
+        <register name="MODE1"/>
+        <register name="MODE2"/>
+    </killedbycall>
+  </prototype>
+
+  <prototype name="processEntry" extrapop="0" stackshift="0">
+    <input pointermax="4">
+      <pentry minsize="1" maxsize="4">
+        <register name="R0"/>
+      </pentry>
+      <pentry minsize="1" maxsize="500" align="4">
+        <addr offset="0" space="stack"/>
+      </pentry>
+    </input>
+    <output killedbycall="true">
+      <pentry minsize="1" maxsize="4">
+        <register name="R0"/>
+      </pentry>
+    </output>
+    <unaffected>
+      <register name="SP"/>
+    </unaffected>
+  </prototype>
+
+</compiler_spec>

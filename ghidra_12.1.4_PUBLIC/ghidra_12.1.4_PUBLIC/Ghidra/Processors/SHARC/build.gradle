@@ -1,0 +1,88 @@
+/*
+ * Ghidra SHARC Processor Module Build Script
+ *
+ * This builds the SHARC processor module as a Ghidra extension.
+ */
+
+// Apply the Ghidra processor module plugin
+apply plugin: 'ghidra-processor-module'
+
+// Module metadata
+module {
+    name = 'SHARC'
+    version = '1.0'
+    description = 'Analog Devices SHARC (ADSP-21573) processor module for Ghidra'
+    category = 'Processor'
+    author = 'Ampero2 RE Project'
+
+    // Supported file types
+    supportedFiles = ['*.dxe', '*.ldr', '*.bin']
+
+    // Dependencies
+    dependencies = ['Ghidra:12.1.4']
+}
+
+// Source sets
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+        resources {
+            srcDirs = ['data']
+        }
+    }
+}
+
+// Sleigh compilation task
+task compileSleigh(type: Exec) {
+    description = 'Compile SHARC Sleigh specification'
+    group = 'Build'
+
+    workingDir = file('data')
+    commandLine 'ant', 'sleigh-compile'
+
+    doFirst {
+        // Ensure ant is available
+        if (!file('build.xml').exists()) {
+            throw new GradleException('build.xml not found in data directory')
+        }
+    }
+}
+
+// Ensure sleigh compilation runs before building
+tasks.named('buildModule') { dependsOn compileSleigh }
+
+// Clean task
+tasks.named('clean') {
+    doLast {
+        delete 'data/languages/SHARC.sla'
+        delete 'data/languages/*.sla'
+    }
+}
+
+// Module packaging
+tasks.named('packageModule') {
+    dependsOn compileSleigh
+
+    // Include compiled sleigh files
+    from('data/languages') {
+        include 'SHARC.sla'
+        into 'data/languages'
+    }
+}
+
+// Verification task
+task verifyModule(type: Exec) {
+    description = 'Verify SHARC module loads correctly'
+    group = 'Verification'
+
+    commandLine 'ghidra', '--help'
+
+    doLast {
+        println 'Module verification requires manual testing in Ghidra'
+        println '1. Install the extension via Ghidra Extension Manager'
+        println '2. Create a new project and import a SHARC binary'
+        println '3. Select "SHARC:BE:32:SHARC+" as the language'
+    }
+}

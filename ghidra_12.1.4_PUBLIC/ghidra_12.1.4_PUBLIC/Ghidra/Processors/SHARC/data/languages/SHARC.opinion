@@ -1,0 +1,39 @@
+<opinions>
+    <!--
+      SHARC Binary Format Detection
+
+      SHARC binaries typically come in several formats:
+      1. DXE (Debug Executable) - Analog Devices proprietary format
+      2. LDR (Loader Stream) - Boot loader format
+      3. Raw binary - Raw instruction/data memory images
+      4. ELF - Some toolchains may produce ELF
+    -->
+
+    <!-- DXE (Debug Executable) Format -->
+    <constraint loader="Raw Binary">
+        <constraint primary="0" processor="SHARC" endian="big" size="32" variant="SHARC+" />
+    </constraint>
+
+    <!-- ELF Format (if toolchain produces ELF) -->
+    <constraint loader="Executable and Linking Format (ELF)">
+        <!-- SHARC ELF machine type would be EM_SHARC (TBD) -->
+        <!-- For now, match on generic 32-bit big-endian -->
+        <constraint primary="40" processor="SHARC" endian="big" size="32" variant="SHARC+" />
+    </constraint>
+
+    <!-- Intel Hex Format -->
+    <constraint loader="Intel Hex">
+        <constraint primary="0" processor="SHARC" endian="big" size="32" variant="SHARC+" />
+    </constraint>
+
+    <!-- Motorola S-Record Format -->
+    <constraint loader="Motorola S-Record">
+        <constraint primary="0" processor="SHARC" endian="big" size="32" variant="SHARC+" />
+    </constraint>
+
+    <!-- Analog Devices LDR (Loader) Format -->
+    <constraint loader="Raw Binary">
+        <constraint primary="0" processor="SHARC" endian="big" size="32" variant="SHARC+" />
+    </constraint>
+
+</opinions>

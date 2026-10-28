@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module manifest_version="3" name="SHARC" version="1.0" description="Analog Devices SHARC (Super Harvard Architecture Computer) processor module for ADSP-21573 and compatible processors">
+    <category name="Processor"/>
+    <supportedFiles>
+        <filePattern pattern="*.dxe" description="SHARC DXE Executable"/>
+        <filePattern pattern="*.ldr" description="SHARC Loader Stream"/>
+        <filePattern pattern="*.bin" description="SHARC Raw Binary"/>
+    </supportedFiles>
+    <dependencies>
+        <dependency module="Ghidra" version="12.1.4"/>
+    </dependencies>
+    <provides>
+        <service name="ProcessorModule" class="ghidra.proc.sharc.SHARCProcessorModule"/>
+    </provides>
+</module>

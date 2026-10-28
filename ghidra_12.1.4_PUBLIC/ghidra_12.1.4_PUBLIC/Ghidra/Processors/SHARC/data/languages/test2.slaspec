@@ -1,0 +1,93 @@
+# SHARC (ADSP-21573) Architecture Specification
+# Super Harvard Architecture Computer - Analog Devices DSP
+
+# ============================================================================
+# BASIC DEFINITIONS
+# ============================================================================
+
+define endian=big;
+define alignment=6;
+
+# Address spaces
+# PM = Program Memory (48-bit wide instructions)
+# DM = Data Memory (32-bit wide data)
+# IO = I/O Space
+
+define space PM type=ram_space size=4 wordsize=6 default;
+define space DM type=ram_space size=4 wordsize=4;
+# define space IO type=ram_space size=4 wordsize=4;
+
+# Register spaces
+define space register type=register_space size=4 wordsize=4;
+# define space shadow type=register_space size=4 wordsize=4;
+
+# ============================================================================
+# REGISTERS
+# ============================================================================
+
+# General Purpose Registers (16 per register file)
+# R0-R15 in register file 0 (fixed-point/integer)
+define register offset=0x00 size=4 [ R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 ];
+
+# SIMD Register File (S0-S15)
+# define register offset=0x40 size=4 [ S0 S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 ];
+
+# Extended precision floating point (40-bit) - uses register pairs
+# F0-F7 are 40-bit registers (5 bytes each)
+# define register offset=0x80 size=5 [ F0 F1 F2 F3 F4 F5 F6 F7 ];
+
+# Status and Control Registers
+# define register offset=0xA0 size=4 [ ASTAT MODE1 MODE2 IRPTL IMASK USTAT1 USTAT2 LCNTR SYSCTL ];
+
+# Stack Pointers
+# define register offset=0xC0 size=4 [ SP SSP LPSTACK ];
+
+# Frame Pointers
+# define register offset=0xD0 size=4 [ FP FPP ];
+
+# Program Counter and Sequencing
+# define register offset=0xD8 size=4 [ PC PCSTK PCSTKP ];
+
+# Loop Registers
+# define register offset=0xE8 size=4 [ LADDR CURLCNTR ];
+
+# System Registers
+# define register offset=0xF0 size=4 [ SYSCTL2 PMM DMPM1 DMPM2 ];
+
+# Core ID and Revision
+# define register offset=0x100 size=4 [ COREID CHIPID ];
+
+# ============================================================================
+# CONTEXT REGISTERS
+# ============================================================================
+
+define register offset=0x00 size=4 contextreg;
+define context contextreg
+	PEYEN       = (0,0)    # SIMD mode enabled (MODE1[13])
+;
+
+# ============================================================================
+# INSTRUCTION TOKENS AND FIELDS
+# ============================================================================
+
+# SHARC instructions are 48-bit wide
+define token sharc_instr (48)
+  Rx=(16,19)          # 4-bit X register (R0-R15)
+  Ry=(12,15)          # 4-bit Y register (R0-R15)
+  Rz=(8,11)           # 4-bit Z register (R0-R15)
+  opcode=(42,47)      # 6-bit major opcode
+  subop=(36,41)       # 6-bit sub-opcode
+;
+
+# ============================================================================
+# TEST SUB-CONSTRUCTOR
+# ============================================================================
+
+rx: Rx is Rx { export Rx; };
+
+# Instruction test
+:test rx is rx & opcode=0 & subop=0
+{
+}
+
+define endian=big;

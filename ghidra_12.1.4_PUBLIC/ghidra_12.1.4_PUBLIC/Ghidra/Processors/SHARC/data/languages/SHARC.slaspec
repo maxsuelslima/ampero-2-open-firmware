@@ -1,0 +1,217 @@
+# SHARC (ADSP-21573) Architecture Specification
+# Super Harvard Architecture Computer - Analog Devices DSP
+#
+# This defines the core architecture for SHARC+ processors including ADSP-21573
+# Features:
+# - 32-bit modified Harvard architecture (separate Program Memory and Data Memory)
+# - VLIW (Very Long Instruction Word) - parallel instruction execution
+# - SIMD support for vector operations
+# - 32-bit fixed-point and 32/40-bit floating-point operations
+# - Dual-core support
+
+# ============================================================================
+# BASIC DEFINITIONS
+# ============================================================================
+
+define endian=big;
+define alignment=6;
+
+# Address spaces
+# PM = Program Memory (48-bit wide instructions)
+# DM = Data Memory (32-bit wide data)
+# IO = I/O Space
+
+define space PM type=ram_space size=4 wordsize=6 default;
+define space DM type=ram_space size=4 wordsize=4;
+define space IO type=ram_space size=4 wordsize=4;
+
+# Register spaces
+define space register type=register_space size=4 wordsize=4;
+define space shadow type=register_space size=4 wordsize=4;
+
+# ============================================================================
+# REGISTERS
+# ============================================================================
+
+# General Purpose Registers (16 per register file)
+# R0-R15 in register file 0 (fixed-point/integer)
+define register offset=0x00 size=4 [ R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 ];
+
+# SIMD Register File (S0-S15)
+define register offset=0x40 size=4 [ S0 S1 S2 S3 S4 S5 S6 S7 S8 S9 S10 S11 S12 S13 S14 S15 ];
+
+# Extended precision floating point (40-bit) - uses register pairs
+# F0-F7 are 40-bit registers (5 bytes each)
+define register offset=0x80 size=5 [ F0 F1 F2 F3 F4 F5 F6 F7 ];
+
+# Status and Control Registers
+define register offset=0xA0 size=4 [ ASTAT MODE1 MODE2 IRPTL IMASK USTAT1 USTAT2 LCNTR ];
+define register offset=0xC0 size=4 [ SYSCTL ];
+
+# Stack Pointers
+define register offset=0xC4 size=4 [ SP SSP LPSTACK ];
+
+# Frame Pointers
+define register offset=0xD0 size=4 [ FP FPP ];
+
+# Program Counter and Sequencing
+define register offset=0xD8 size=4 [ PC PCSTK PCSTKP ];
+
+# Loop Registers
+define register offset=0xE8 size=4 [ LADDR CURLCNTR ];
+
+# System Registers
+define register offset=0xF0 size=4 [ SYSCTL2 PMM DMPM1 DMPM2 ];
+
+# Core ID and Revision
+define register offset=0x100 size=4 [ COREID CHIPID ];
+
+# Context register (virtual, for SLEIGH context)
+define register offset=0x200 size=4 contextreg;
+define context contextreg
+	PEYEN       = (0,0)    # SIMD mode enabled (MODE1[13])
+	SISD        = (1,1)    # SISD mode (MODE1[18])
+	CBUFEN      = (2,2)    # Circular buffer enabled (MODE1[10])
+	IRPTEN      = (3,3)    # Global interrupt enable (MODE1[0])
+	ALUSAT      = (4,4)    # ALU saturation (MODE1[1])
+	M_MODE      = (5,5)    # Multiplier mode (MODE1[2])
+	RND32       = (6,6)    # Round to 32 bits (MODE1[3])
+	TRUNC       = (7,7)    # Truncation mode (MODE1[4])
+;
+
+# ============================================================================
+# INSTRUCTION TOKENS AND FIELDS
+# ============================================================================
+
+# SHARC instructions are 48-bit wide
+define token sharc_instr (48)
+  opcode=(42,47)      # 6-bit major opcode
+  subop=(36,41)       # 6-bit sub-opcode
+  cu=(34,35)          # 2-bit compute unit select
+  am=(32,33)          # 2-bit ALU/MAC select
+  xop=(28,31)         # 4-bit X-op (extended opcode)
+  yop=(24,27)         # 4-bit Y-op (extended opcode)
+  zop=(20,23)         # 4-bit Z-op (extended opcode)
+  Rx=(16,19)          # 4-bit X register (R0-R15)
+  Ry=(12,15)          # 4-bit Y register (R0-R15)
+  Rz=(8,11)           # 4-bit Z register (R0-R15)
+  Sx=(16,19)          # 4-bit X register (S0-S15) - overlaps Rx
+  Sy=(12,15)          # 4-bit Y register (S0-S15) - overlaps Ry
+  Sz=(8,11)           # 4-bit Z register (S0-S15) - overlaps Rz
+  Ra=(4,7)            # 4-bit A register (R0-R15)
+  Rb=(0,3)            # 4-bit B register (R0-R15)
+  imm8=(7,14)         # 8-bit immediate
+  imm12=(4,15)        # 12-bit immediate
+  imm16=(0,15)        # 16-bit immediate
+  imm24=(0,23)        # 24-bit immediate
+  imm32=(0,31)        # 32-bit immediate (for data moves)
+  pm_addr=(0,23)      # 24-bit PM address
+  dm_addr=(0,15)      # 16-bit DM address (direct)
+  io_addr=(0,15)      # 16-bit IO address
+  shift_imm=(0,5)     # 6-bit shift immediate
+  cond=(44,47)        # 4-bit condition code
+  sat_bit=(31,31)     # Saturation
+  rnd_bit=(30,30)     # Rounding
+  s_bit=(29,29)       # Status update
+  f_bit=(28,28)       # Float mode
+  i_bit=(27,27)       # Indirect addressing
+  m_bit=(26,26)       # Modify (post-modify)
+  b_bit=(25,25)       # Bit-reverse
+  l_bit=(24,24)       # Long word (48-bit)
+  lc_bit=(23,23)      # Loop counter
+  lp_bit=(22,22)      # Loop
+  ci_bit=(21,21)      # Counter interrupt
+  cj_bit=(20,20)      # Conditional jump
+;
+
+# ============================================================================
+# COMPUTE UNIT SELECTION
+# ============================================================================
+
+# cu field values:
+# 00 = ALU
+# 01 = Multiplier
+# 10 = Shifter
+# 11 = ALU + Multiplier (dual)
+
+# am field values (for ALU ops):
+# 00 = Fixed-point
+# 01 = Float 32-bit
+# 10 = Float 40-bit
+# 11 = Reserved
+
+# ============================================================================
+# USER-DEFINED OPERATIONS (P-code macros)
+# ============================================================================
+
+# ALU Operations
+define pcodeop ALU_ADD;
+define pcodeop ALU_SUB;
+define pcodeop ALU_ADD_C;
+define pcodeop ALU_SUB_B;
+define pcodeop ALU_ABS;
+define pcodeop ALU_PASS;
+define pcodeop ALU_NEG;
+define pcodeop ALU_AND;
+define pcodeop ALU_OR;
+define pcodeop ALU_XOR;
+define pcodeop ALU_NOT;
+define pcodeop ALU_MIN;
+define pcodeop ALU_MAX;
+define pcodeop ALU_CMP;
+define pcodeop ALU_TST;
+define pcodeop ALU_CLIP;
+
+# Multiplier Operations
+define pcodeop MAC_MUL;
+define pcodeop MAC_MUL_ADD;
+define pcodeop MAC_MUL_SUB;
+define pcodeop MAC_SAT;
+define pcodeop MAC_RND;
+define pcodeop MAC_FXD_MUL;
+define pcodeop MAC_FLOAT_MUL;
+define pcodeop MAC_FIX_MUL;
+
+# Shifter Operations
+define pcodeop SHF_LSHIFT;
+define pcodeop SHF_RSHIFT;
+define pcodeop SHF_ARSHIFT;
+define pcodeop SHF_ROTATE;
+define pcodeop SHF_DEPOSIT;
+define pcodeop SHF_EXTRACT;
+define pcodeop SHF_EXP;
+define pcodeop SHF_NORM;
+define pcodeop SHF_DERIVE;
+define pcodeop SHF_CLZ;
+
+# SIMD Operations
+define pcodeop SIMD_ALU_ADD;
+define pcodeop SIMD_ALU_SUB;
+define pcodeop SIMD_MAC_MUL;
+define pcodeop SIMD_MAC_ADD;
+define pcodeop SIMD_SHF_SHIFT;
+
+# Memory Operations
+define pcodeop PM_LOAD;
+define pcodeop PM_STORE;
+define pcodeop DM_LOAD;
+define pcodeop DM_STORE;
+define pcodeop DM_LOAD_MOD;
+define pcodeop DM_STORE_MOD;
+
+# Branch/Flow Operations
+define pcodeop BR_CALL;
+define pcodeop BR_JUMP;
+define pcodeop BR_RTS;
+define pcodeop BR_RTI;
+define pcodeop BR_LOOP;
+define pcodeop BR_DO_UNTIL;
+define pcodeop BR_IDLE;
+
+# ============================================================================
+# INCLUDE INSTRUCTION DEFINITIONS
+# ============================================================================
+
+@include "SHARC_instructions.sinc"
+
+# End of specification

@@ -1,0 +1,2 @@
+# Sleigh compiler arguments for SHARC
+# -DBaseDir is set by build.xml

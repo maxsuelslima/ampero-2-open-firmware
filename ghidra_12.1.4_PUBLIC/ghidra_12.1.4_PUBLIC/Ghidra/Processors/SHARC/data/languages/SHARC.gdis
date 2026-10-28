@@ -1,0 +1,73 @@
+# SHARC Disassembly Display Options
+# Configuration for the SHARC disassembler display
+
+# Display options
+DISPLAY_OPCODES=true
+DISPLAY_OPERANDS=true
+DISPLAY_COMMENTS=true
+DISPLAY_EOL_COMMENTS=true
+DISPLAY_REGISTER_NAMES=true
+DISPLAY_MEMORY_REFS=true
+
+# Instruction formatting
+MNEMONIC_CASE=upper
+REGISTER_PREFIX=R
+REGISTER_CASE=upper
+HEX_PREFIX=0x
+HEX_CASE=lower
+HEX_PAD=true
+
+# Address formatting
+ADDRESS_SPACE_PREFIX=PM:
+ADDRESS_HEX=true
+ADDRESS_PAD=6
+
+# Data formatting
+DATA_HEX=true
+DATA_PAD=8
+ASCII_DISPLAY=true
+UNICODE_DISPLAY=false
+
+# Instruction groups
+SHOW_ALU_OPS=true
+SHOW_MULT_OPS=true
+SHOW_SHIFT_OPS=true
+SHOW_MOVE_OPS=true
+SHOW_FLOW_OPS=true
+SHOW_SIMD_OPS=true
+SHOW_VLIW_OPS=true
+
+# VLIW display
+VLIW_SEPARATOR=" || "
+VLIW_INDENT=4
+
+# Register display
+SHOW_REGISTER_VALUES=true
+SHOW_REGISTER_DESCRIPTIONS=true
+
+# Branch display
+BRANCH_TARGET_FORMAT=label
+SHOW_BRANCH_DELAY=false
+
+# Loop display
+SHOW_LOOP_ANNOTATIONS=true
+
+# SIMD display
+SIMD_REGISTER_PREFIX=S
+SHOW_SIMD_LANES=true
+
+# Floating point display
+FLOAT_FORMAT=scientific
+FLOAT_PRECISION=6
+
+# Comment style
+LINE_COMMENT=//
+BLOCK_COMMENT_START=/*
+BLOCK_COMMENT_END=*/
+
+# Pseudo-ops
+SHOW_DIRECTIVES=true
+DIRECTIVE_PREFIX=.
+
+# Default radix for numbers
+DEFAULT_RADIX=16

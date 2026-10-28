@@ -1,0 +1,36 @@
+# SHARC Instruction Set Definitions
+# ADSP-21573 SHARC+ Processor
+#
+# Minimal test - just try to get ONE instruction working
+
+# ============================================================================
+# SUB-CONSTRUCTORS
+# ============================================================================
+
+rx_s: Rx is Rx { export Rx; }
+ry_s: Ry is Ry { export Ry; }
+rz_s: Rz is Rz { export Rz; }
+pm_addr_s: pm_addr is pm_addr { export pm_addr; }
+
+# ============================================================================
+# TEST INSTRUCTIONS - try different opcode values
+# ============================================================================
+
+# Try opcode=0 for compute
+:test_add  is opcode=0 & rz_s & rx_s & ry_s
+{
+  build rx_s;
+  build ry_s;
+  rz_s = rx_s + ry_s;
+}
+
+# Try opcode=1 for flow
+:test_jump  is opcode=1 & pm_addr_s
+{
+  PC = pm_addr_s;
+}
+
+# NOP - match all zeros in major fields
+:nop  is opcode=0 & subop=0 & cu=0 & am=0
+{
+}

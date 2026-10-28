@@ -1,0 +1,30 @@
+# SHARC Processor Module Information
+#
+# This file contains metadata about the SHARC processor module
+# for Ghidra's module system.
+
+name=SHARC
+version=1.0
+description=Analog Devices SHARC (ADSP-21573) processor module
+category=Processor
+author=Ampero2 RE Project
+minGhidraVersion=12.1.4
+maxGhidraVersion=12.9.9
+
+# Supported file types
+supportedFiles=*.dxe,*.ldr,*.bin
+
+# Dependencies
+depends=Ghidra
+
+# Processor details
+processor=SHARC
+endian=big
+size=32
+variant=SHARC+
+
+# Language IDs
+languages=SHARC:BE:32:SHARC+,SHARC:LEBE:32:SHARC+
+
+# Compiler specs
+compilers=default,dsp
