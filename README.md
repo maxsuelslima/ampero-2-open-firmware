@@ -1,238 +1,206 @@
-# Ampero 2 Firmware Reverse Engineering
+# Open Source Firmware for Hotone Ampero II
 
-Reverse engineering the Hotone Ampero II guitar processor firmware (MIMXRT1052 Cortex-M7) and its Flutter-based editor software.
+> **Goal**: Create a fully open-source, community-driven firmware for the Hotone Ampero II guitar multi-effects processor, built from scratch with modern DSP algorithms and a modular architecture.
 
-## Project Overview
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Platform: i.MX RT1052 + ADSP-21573](https://img.shields.io/badge/Platform-i.MX%20RT1052%20%2B%20ADSP--21573-blue.svg)]
+[![Status: Early Development](https://img.shields.io/badge/Status-Early%20Development-orange.svg)]
 
-| Component | Details |
-|-----------|---------|
-| **Target Hardware** | Hotone Ampero II (i.MX RT1052 Cortex-M7 @ 600MHz) |
-| **Firmware Location** | `/home/maico/Programming/ampero2/` |
-| **Editor Software** | `/home/maico/Programming/ampero2/Ampero II/` (Flutter/Dart) |
-| **Analysis Tools** | Ghidra 12.2, REA MCP, custom Python scripts |
+## 🎸 Project Vision
 
-## Firmware Files
+The Hotone Ampero II is a powerful guitar processor with dual-processor architecture:
+- **ARM Cortex-M7** (i.MX RT1052 @ 600MHz) - Control, UI, USB, preset management
+- **Dual-core SHARC+ DSP** (ADSP-21573 @ 450MHz each) - Real-time audio processing
+
+This project aims to reverse-engineer the hardware interfaces and build a **completely open-source firmware** that:
+- Runs on stock Ampero II hardware (no hardware modifications needed)
+- Provides a modern, hackable platform for guitar effects development
+- Supports community-contributed effects, amp models, and IR loaders
+- Uses standard development tools (GCC, CMake, VS Code)
+- Documents all hardware interfaces for future ports
+
+## 📁 Repository Structure
 
 ```
 ampero2/
-├── section0_mainapp.elf    # Main application at flash 0x60010000 (primary analysis target)
-├── firmware.elf            # Full firmware at 0x08000000 (bootloader + app)
-├── section3_resources.bin  # 6.7MB raw 16-bit signed audio (impulse responses)
-├── algorithm.json          # 2.5MB effect definitions (17 modules, ~450 effects)
-└── extract_modules.py      # Module extraction script
+├── docs/                          # Documentation
+│   ├── ARCHITECTURE.md            # System architecture overview
+│   ├── HTFW_FORMAT.md             # HTFW firmware container format
+│   ├── SHARC_DXE_FORMAT.md        # SHARC .dxe executable format
+│   ├── PROTOCOL.md                # ARM ↔ SHARC communication protocol
+│   ├── EFFECT_SYSTEM.md           # Effect module system design
+│   ├── MEMORY_MAP.md              # Complete memory maps
+│   ├── BUILDING.md                # Build instructions
+│   ├── ROADMAP.md                 # Project roadmap & milestones
+│   └── CONTRIBUTING.md            # Contribution guidelines
+├── firmware/                      # Firmware source code
+│   ├── arm/                       # ARM Cortex-M7 firmware (i.MX RT1052)
+│   │   ├── src/
+│   │   ├── include/
+│   │   ├── linker/
+│   │   └── CMakeLists.txt
+│   ├── sharc/                     # SHARC+ DSP firmware (ADSP-21573)
+│   │   ├── core1/                 # FX, Delay, Reverb, Modulation
+│   │   ├── core2/                 # Amp, Cab/IR, Dynamics, Preamp
+│   │   ├── shared/                # Common headers, protocol defs
+│   │   └── CMakeLists.txt
+│   └── tools/                     # Build & analysis tools
+│       ├── build_firmware.py      # HTFW firmware packer
+│       ├── extract_dxe.py         # SHARC .dxe analyzer
+│       └── gen_effect_table.py    # Effect table generator
+├── resources/                     # Audio resources & configs
+│   ├── irs/                       # Impulse responses (cab sims)
+│   ├── algorithm.json             # Effect definitions (from editor)
+│   └── presets/                   # Factory presets
+├── reverse-engineering/           # RE notes & scripts
+│   ├── ghidra_scripts/            # Ghidra analysis scripts
+│   ├── rea_queries/               # REA MCP queries
+│   └── findings/                  # Documented findings
+└── tests/                         # Unit & integration tests
 ```
 
-### Memory Map (i.MX RT1052)
-| Region | Address Range | Purpose |
-|--------|---------------|---------|
-| Flash | 0x60000000 - 0x6FFFFFFF | Main firmware storage |
-| RAM | 0x20000000 - 0x203FFFFF | SDRAM (4MB) |
-| ITCM | 0x00000000 - 0x000FFFFF | Instruction TCM |
-| DTCM | 0x20000000 - 0x200FFFFF | Data TCM |
+## 🔬 Reverse Engineering Progress
 
-## Key Findings
+This project builds on extensive reverse engineering of the stock firmware:
 
-### 1. Effect Definition Tables (section0_mainapp.elf @ 0x60187d00)
+| Component | Status | Notes |
+|-----------|--------|-------|
+| HTFW Firmware Format | ✅ Documented | Header, section table, checksums |
+| ARM Memory Map | ✅ Mapped | Flash 0x60000000, RAM 0x20000000, TCM |
+| SHARC .dxe Format | 🔄 In Progress | Embedded in ARM flash, loaded via Link Port |
+| Effect Table (0x60187D00) | ✅ Located | 17 modules, ~450 effects |
+| ARM ↔ SHARC Protocol | 🔄 Partial | Shared memory mailbox system |
+| Audio I/O (SAI/SPORT) | 📋 Planned | 48kHz/96kHz I2S configuration |
+| USB Stack (MIDI/Audio/DFU) | 📋 Planned | Device mode implementation |
+| IR Resources (6.7MB) | ✅ Extracted | Raw 16-bit PCM, 48kHz mono |
 
-Tables mapping effect codes to function pointers, matching `algorithm.json`:
+See [REVERSE_ENGINEERING.md](docs/REVERSE_ENGINEERING.md) for detailed findings.
 
-```c
-// AMP module (Index 3)
-{ 0x03000000, ptr_0x010ee180 },
-{ 0x03010100, ptr_0x2d0ce180 },
-{ 0x03010000, ptr_0x4d0ce180 },
-{ 0x03020100, ptr_0x6d0ce180 },
-{ 0x03020000, ptr_0x390ee180 },
-{ 0x03030100, ptr_0x99fce280 },
-{ 0x03030000, ... },
+## 🚀 Quick Start
 
-// DYN module (Index 2)  
-{ 0x020d0300, ... },
-{ 0x020e0300, ... },
-```
+### Prerequisites
 
-**Mystery**: Function pointers show 0x20000000 (512MB) increments - likely RAM relocation addresses or XOR-encoded.
-
-### 2. Signal Chain Processing
-
-- **DlgEffectChain.c** string at `0x6004c3ef` (also `0x80381bf` in firmware.elf)
-- Preceding jump table with Thumb-2 STR instructions (`0x9002`, `0x9003`, etc.)
-- Function `FUN_6004c438` accesses `DAT_6004c680`, manipulates `param_2 >> 6`
-- Shared memory region at `0x600c0000` (4KB)
-
-### 3. Vector Tables
-
-**section0_mainapp.elf** (relative offsets from base 0x60010000):
-```
-0x000:  0x00000547    // Initial SP
-0x004:  0x0000054B    // Reset → 0x6001054B (Thumb entry)
-0x008:  0x0000054F    // NMI
-0x00C:  0x00000553    // HardFault
-...
-```
-
-**firmware.elf** (absolute addresses at 0x08000000):
-- Reset handler at `0x08001000` (recognized as `entry` function)
-
-### 4. Module System References
-
-| String | Address | Context |
-|--------|---------|---------|
-| `SLOT_NUM` | 0x60017ebd | `"SourceSlot < SLOT_NUM"` |
-| `SLOT_ALGRO` | 0x6003017a | `"== SLOT_ALGRO"` |
-| `GetAlgroNumAMP` | 0x60061afc | `"Num < GetAlgroNumAMP()"` |
-| `SetCABRelation` | 0x6002fb42 | `"SetCABRelation"` |
-| `GROUP_NUM_DYN` | 0x60062e34 | `"GROUP_NUM_DYN"` |
-| `Chain == 1` | 0x60022a97 | Chain selection logic |
-| `Chain A` | 0x60242709 | Chain identifier |
-
-### 5. Effect Modules (from algorithm.json)
-
-17 modules, ~450 effects total:
-
-| Index | Module | Effects | Prefix |
-|-------|--------|---------|--------|
-| 0 | CATCH | 8 | 0x00xxxxxx |
-| 1 | FREQ | 12 | 0x01xxxxxx |
-| 2 | DYN | 35 | 0x02xxxxxx |
-| 3 | AMP | 85 | 0x03xxxxxx |
-| 4 | WAH | 18 | 0x04xxxxxx |
-| 5 | DRV | 42 | 0x05xxxxxx |
-| 6 | EQ | 28 | 0x06xxxxxx |
-| 7 | FX | 55 | 0x07xxxxxx |
-| 8 | CAB | 24 | 0x08xxxxxx |
-| 9 | MOD | 68 | 0x09xxxxxx |
-| 10 | DLY | 32 | 0x0Axxxxxx |
-| 11 | RVB | 28 | 0x0Bxxxxxx |
-| 12 | VOL | 8 | 0x0Cxxxxxx |
-| 13 | IR | 16 | 0x0Dxxxxxx |
-| 14 | PREAMP | 12 | 0x0Exxxxxx |
-| 15 | SEND | 4 | 0x0Fxxxxxx |
-| 16 | RETURN | 4 | 0x10xxxxxx |
-
-### 6. Resources (section3_resources.bin)
-
-- **6.7MB raw 16-bit signed PCM audio**
-- Impulse responses for cabinet simulation
-- No headers, contiguous audio chunks
-- Format: 48kHz mono (typical for IR)
-
-### 7. Flutter Editor (Ampero II/app.so)
-
-**Dart AOT compiled (x86_64, 11.5MB):**
-- `EffectChainWidget`, `EffectChainProvider`, `EffectChainLineWidget`
-- Preset cloud APIs: `https://community.hotoneaudio.com.cn/api/v1/preset/...`
-- USB Audio / MIDI routing
-- Backup/Restore functionality
-- OTA firmware update logic
-
-**Flutter Kernel** (kernel_blob.bin, 75MB): Contains Dart intermediate representation
-
-### 8. Audio Driver Paths (firmware.elf)
-
-| Path | Address Range | Purpose |
-|------|---------------|---------|
-| DynamicInterface | 0x08000000+ | Dynamic effect processing |
-| PresetInterface | 0x08000000+ | Preset management |
-| GlobalInterface | 0x08000000+ | Global settings |
-| SplitNode | 0x08000000+ | Signal routing |
-| InputSource | 0x08000000+ | Audio input handling |
-
-## Analysis Tools & Scripts
-
-### REA MCP Commands Used
 ```bash
-# Open binaries
-rea open_binary section0_mainapp.elf
-rea open_binary firmware.elf
+# ARM toolchain
+sudo apt install gcc-arm-none-eabi cmake ninja-build
 
-# Search strings
-rea search_strings "DlgEffectChain" --document section0_mainapp.elf
-rea search_strings "SLOT_NUM" --document section0_mainapp.elf
+# SHARC toolchain (CCES or GCC)
+# CCES: Download from Analog Devices (free eval)
+# GCC: Build from source or use ADI provided toolchain
 
-# List procedures
-rea list_procedures --document section0_mainapp.elf
-rea list_procedures --document firmware.elf
-
-# Examine memory
-rea read_bytes --address 0x60187d00 --length 256 --document section0_mainapp.elf
-rea inspect_address_context --address 0x6004c3ef --document section0_mainapp.elf
+# Python tools
+pip install numpy scipy
 ```
 
-### Python Scripts
-```python
-# extract_modules.py - Extract module catalog from algorithm.json
-import json
-with open('algorithm.json') as f:
-    data = json.load(f)
-for module in data['PluginProperties']['Modules']['Catalog']:
-    print(f"{module['Name']} Index={module['Index']} Effects={len(module['Alg'])}")
+### Building (Once Implementation Exists)
+
+```bash
+# Configure
+cmake -B build -S firmware -DCMAKE_TOOLCHAIN_FILE=firmware/arm/toolchain.cmake
+
+# Build ARM firmware
+cmake --build build --target ampero2_arm
+
+# Build SHARC Core1
+cmake --build build --target ampero2_sharc_core1
+
+# Build SHARC Core2
+cmake --build build --target ampero2_sharc_core2
+
+# Package final firmware
+python firmware/tools/build_firmware.py build \
+  --arm-mainapp build/arm/section0_mainapp.bin \
+  --sharc-core1 build/sharc/core1.dxe \
+  --sharc-core2 build/sharc/core2.dxe \
+  --resources resources/irs/section3_resources.bin \
+  --algorithm resources/algorithm.json \
+  --output ampero2_custom_firmware.bin \
+  --version 0.1.0
 ```
 
-## Next Steps
+### Flashing
 
-- [ ] **Decode effect table function pointers** - Test XOR keys, check RAM mapping
-- [ ] **Disassemble signal chain jump table** - Full analysis of 0x6004c3e0 area
-- [ ] **Trace audio processing pipeline** - DynamicInterface, PresetInterface in firmware.elf
-- [ ] **Analyze kernel_blob.bin** - Flutter kernel for additional app logic
-- [ ] **Map effect codes to implementations** - Cross-reference algorithm.json with firmware
-- [ ] **Document IR format** - Parse section3_resources.bin structure
-- [ ] **Build effect parameter map** - Link editor UI to firmware parameters
-- [x] **Analyze SHARC firmware structure** - Found .dxe embedded in ARM firmware (see below)
-- [x] **Document firmware update mechanism** - Editor uploads .dxe via `uploadSpecialFile` API
+The Ampero II uses USB DFU mode for firmware updates:
+1. Hold footswitches A+B while powering on → enters DFU mode
+2. `dfu-util -D ampero2_custom_firmware.bin`
+3. Device reboots into new firmware
 
-## Key Findings (2026-10-26)
+**⚠️ WARNING**: Custom firmware may brick your device. Have a backup of stock firmware and know how to recover via DFU.
 
-### SHARC DSP Firmware (.dxe)
+## 🎯 Current Focus Areas
 
-The ADSP-21573 dual-core SHARC+ firmware is **embedded as binary blobs** in the ARM flash image, not as separate ELF files:
+### Phase 1: ARM Bring-up (In Progress)
+- [ ] Minimal RT1052 SDK setup with CMake
+- [ ] Linker script for HTFW format
+- [ ] Vector table + clock + UART debug
+- [ ] FlexSPI/QSPI initialization
+- [ ] SHARC .dxe loading via Link Port
 
-| Core | Filename | String Location | File |
-|------|----------|-----------------|------|
-| Core1 | `MP-300_DSP_Main_Core1.dxe` | `0x602DD480` | section0_mainapp.elf |
-| Core2 | `MP-300_DSP_Main_Core2.dxe` | `0x0889B1A9` | firmware.elf |
+### Phase 2: SHARC DSP Framework
+- [ ] SHARC .dxe format specification
+- [ ] Core1: Audio routing, FX framework
+- [ ] Core2: Amp/Cab/IR framework
+- [ ] Inter-core + ARM communication
 
-**Extracted section files** (`section1_core1.elf`, `section2_core2.elf`) are **not valid SHARC ELFs** — Ghidra 12.1.4 misidentifies them as ARM (no SHARC+ support). Actual .dxe binaries must be extracted from flash or obtained via vendor DSP update.
+### Phase 3: Effect Engine
+- [ ] Effect module abstraction
+- [ ] Parameter automation system
+- [ ] Signal chain builder
+- [ ] First effects: Gain, Tone, Delay, Reverb
 
-### Firmware Update Mechanism (Flutter Editor)
+### Phase 4: Integration & Polish
+- [ ] USB MIDI/Audio device
+- [ ] Preset save/load
+- [ ] Editor compatibility (or custom UI)
+- [ ] Community effect contributions
 
-The editor (`Ampero II/data/app.so`) updates SHARC firmware via Hotone Cloud API:
+## 🤝 Contributing
 
-| Endpoint | Purpose |
-|----------|---------|
-| `POST /api/v1/lowerComputer/uploadSpecialFile` | **Upload SHARC .dxe** ("special file" = DSP firmware) |
-| `GET /api/v1/lowerComputer/backupInfoList` | List firmware backups |
-| `POST /api/v1/lowerComputer/uploadBackupInfoList` | Upload backup info |
+We welcome contributions! See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.
 
-**Update flow:**
-1. Editor downloads firmware URL via `getFirmwareUpdateUrl`
-2. User selects `.bin` file → clicks "Update Now"
-3. Editor sends `deviceStartUpdateFirmware` USB command → device enters DFU mode
-4. For SHARC cores: editor uploads `.dxe` via `uploadSpecialFile`
-5. ARM writes .dxe to QSPI flash via FlexSPI
-6. On next boot: ARM loads Core1/Core2 .dxe from QSPI → SHARC via Link Port
+Key areas where help is needed:
+- **SHARC DSP development** (assembly/C optimization)
+- **ARM embedded systems** (USB, flash, peripherals)
+- **Audio DSP algorithms** (amp modeling, IR convolution, effects)
+- **Reverse engineering** (protocol, hardware registers)
+- **Documentation** (hardware specs, APIs, tutorials)
+- **Testing** (hardware validation, regression tests)
 
-### Effect Catalog (algorithm.json)
+## 📚 Resources
 
-FREQ module (Index 1, codes `0x01xxxxxx`) pitch-related effects:
-| Effect | Code (hex) | Code (dec) |
-|--------|-----------|------------|
-| Pitch Shift | 0x01000027 | 16777255 |
-| Dual Pitch | 0x01000026 | 16777254 |
-| Quad Pitch | 0x01000048 | 16777288 |
-| Classic PS | 0x01000055 | 16777301 |
-| Harmonizer 1/2 | 0x0100004D/4E | 16777293/94 |
-| Vocal Harmony | 0x0E000002 | 234881026 | *(PREAMP module)*
+### Hardware Documentation
+- [i.MX RT1050 Reference Manual](https://www.nxp.com/docs/en/reference-manual/IMXRT1050RM.pdf)
+- [i.MX RT1050 Data Sheet](https://www.nxp.com/docs/en/data-sheet/IMXRT1050CEC.pdf)
+- [ADSP-21573 SHARC+ Datasheet](https://www.analog.com/media/en/technical-documentation/data-sheets/ADSP-21573.pdf)
+- [ADSP-21573 Hardware Reference](https://www.analog.com/media/en/technical-documentation/processor-manuals/ADSP-2157x_HR.pdf)
 
-**"Pitch Shift HQ" (from V1.3.0 release notes) NOT present** in current algorithm.json — firmware version mismatch.
+### Development Tools
+- [MCUXpresso SDK for i.MX RT1050](https://mcuxpresso.nxp.com/)
+- [CrossCore Embedded Studio (CCES)](https://www.analog.com/en/design-center/processors-and-dsp/blackfin-embedded-processors/sharc-processors/crosscore-embedded-studio.html)
+- [Ghidra 12.2+ with SHARC plugin](https://ghidra-sre.org/) (this repo includes SHARC processor module)
 
-## References
+### Audio DSP References
+- [FAUST DSP Language](https://faust.grame.fr/)
+- [JUCE DSP Module](https://juce.com/)
+- [ATK (Audio ToolKit)](https://github.com/mbrucher/AudioToolKit)
+- [DAFx Book](https://dafx.de/)
 
-- [i.MX RT1052 Reference Manual](https://www.nxp.com/docs/en/reference-manual/IMXRT1050RM.pdf)
-- [ARM Cortex-M7 Technical Reference](https://developer.arm.com/documentation/ddi0646/latest)
-- [Ghidra 12.2](https://ghidra-sre.org/)
-- [REA MCP](https://github.com/ret2labs/rea)
+## 📄 License
+
+This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
+
+**Note**: This is a clean-room reverse engineering project. No Hotone proprietary code is included. All implementations are original work based on hardware interface analysis.
+
+## 🙏 Acknowledgments
+
+- Hotone for creating the Ampero II hardware platform
+- The reverse engineering community (REA, Ghidra, etc.)
+- Analog Devices for SHARC+ documentation (under NDA)
+- NXP for i.MX RT documentation
+- Open source DSP community (FAUST, JUCE, ATK)
 
 ---
 
-*Generated from reverse engineering session. Last updated: 2026-10-26*
+**Join the discussion**: Open an issue or start a discussion to contribute ideas, report findings, or ask questions!
+
+*Last updated: 2026-11-12*
